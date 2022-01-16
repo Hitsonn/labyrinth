@@ -60,8 +60,9 @@ class  Labyrinth:
 
 class Hero:
 
-    def __init__(self, position):
+    def __init__(self, pic, position):
         self.x, self.y = position
+        self.image = pygame.image.load(f"images/{pic}")
 
     def get_position(self):
         return self.x, self.y
@@ -70,16 +71,17 @@ class Hero:
         self.x, self.y = position
 
     def render(self, screen):
-        center = self.x * TILE_SIZE + TILE_SIZE // 2, self.y * TILE_SIZE + TILE_SIZE // 2
-        pygame.draw.circle(screen, (255, 255, 255), center, TILE_SIZE // 2)
+        delta = (self.image.get_width() - TILE_SIZE) // 2
+        screen.blit(self.image, (self.x * TILE_SIZE - delta, self.y * TILE_SIZE - delta))
 
 
 class Enemy:
 
-    def __init__(self, position):
+    def __init__(self, pic, position):
         self.x, self.y = position
         self.delay = 100
         pygame.time.set_timer(ENEMY_EVENT_TYPE, self.delay)
+        self.image = pygame.image.load(f"images/{pic}")
 
     def get_position(self):
         return self.x, self.y
@@ -88,8 +90,9 @@ class Enemy:
         self.x, self.y = position
 
     def render(self, screen):
-        center = self.x * TILE_SIZE + TILE_SIZE // 2, self.y * TILE_SIZE + TILE_SIZE // 2
-        pygame.draw.circle(screen, pygame.Color("brown"), center, TILE_SIZE // 2)
+        delta = (self.image.get_width() - TILE_SIZE) // 2
+        screen.blit(self.image, (self.x * TILE_SIZE - delta, self.y * TILE_SIZE - delta))
+
 
 class Game:
     def __init__(self, labyrinth, hero, enemy):
@@ -144,8 +147,8 @@ def main():
     screen = pygame.display.set_mode(WINDOWS_SIZE)
 
     labirinth = Labyrinth("simple_map.txt", [0, 2], 2)
-    hero = Hero((7, 7))
-    enemy = Enemy((7, 1))
+    hero = Hero("hero.png", (7, 7))
+    enemy = Enemy("enemy.png", (7, 1))
     game = Game(labirinth, hero, enemy)
 
     clock = pygame.time.Clock()
