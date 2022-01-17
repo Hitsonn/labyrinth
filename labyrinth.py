@@ -2,7 +2,7 @@ import pygame
 import pytmx
 
 
-WINDOWS_SIZE = WINDOW_WIDTH, WINDOW_HEIGHT = 672, 608
+WINDOWS_SIZE = WINDOW_WIDTH, WINDOW_HEIGHT = 672, 648
 FPS = 15
 MAPS_DIR = "maps"
 TILE_SIZE = 32
@@ -74,7 +74,7 @@ class Hero:
 
 class Enemy:
 
-    def __init__(self, pic, position, delay):
+    def __init__(self, pic, position, delay=300):
         self.x, self.y = position
         self.delay = delay
         pygame.time.set_timer(ENEMY_EVENT_TYPE, self.delay)
@@ -92,15 +92,17 @@ class Enemy:
 
 
 class Game:
-    def __init__(self, labyrinth, hero, enemy):
+    def __init__(self, labyrinth, hero, *enemy):
         self.labyrinth = labyrinth
         self.hero = hero
         self.enemy = enemy
+        self.result = False
 
     def render(self, screen):
         self.labyrinth.render(screen)
         self.hero.render(screen)
-        self.enemy.render(screen)
+        for enemy in self.enemy:
+            enemy.render(screen)
 
     def update_hero(self):
         next_x, next_y = self.hero.get_position()
@@ -116,15 +118,19 @@ class Game:
             self.hero.set_position((next_x, next_y))
 
     def move_enemy(self):
-        next_position = self.labyrinth.find_path_step(self.enemy.get_position(),
-                                                      self.hero.get_position())
-        self.enemy.set_position(next_position)
+        for enemy in self.enemy:
+            next_position = self.labyrinth.find_path_step(enemy.get_position(),
+                                                          self.hero.get_position())
+            enemy.set_position(next_position)
 
     def check_win(self):
         return self.labyrinth.get_tile_id(self.hero.get_position()) == self.labyrinth.finish_tile
 
     def check_lose(self):
-        return self.hero.get_position() == self.enemy.get_position()
+        for enemy in self.enemy:
+            if self.hero.get_position() == enemy.get_position():
+                self.result = True
+        return self.result
 
 
 def show_message(screen, message):
@@ -139,17 +145,36 @@ def show_message(screen, message):
     screen.blit(text, (text_x, text_y))
 
 
-def main():
+def main(level=1):
     pygame.init()
     screen = pygame.display.set_mode(WINDOWS_SIZE)
+    level = level
 
-    labirinth = Labyrinth("map1.tmx", [30, 46], 46)
+    labirinth_1 = Labyrinth("map1.tmx", [10, 46], 46)
+    labirinth_2 = Labyrinth("map2.tmx", [15, 46], 46)
+    labirinth_3 = Labyrinth("map3.tmx", [30, 46], 46)
     hero = Hero("hero.png", (10, 9))
     enemy_1 = Enemy("enemy.png", (19, 9), 300)
-    enemy_2 = Enemy("enemy.png", (7, 1), 200)
-    enemy_3 = Enemy("enemy.png", (7, 1), 100)
-    game = Game(labirinth, hero, enemy_1)
-
+    enemy_2 = Enemy("enemy.png", (1, 7), 300)
+    enemy_3 = Enemy("enemy.png", (4, 7), 300)
+    if level == 1:
+        game = Game(labirinth_1, hero, enemy_1)
+    elif level == 2:
+        game = Game(labirinth_2, hero, enemy_1)
+    elif level == 3:
+        game = Game(labirinth_3, hero, enemy_1)
+    elif level == 4:
+        game = Game(labirinth_1, hero, enemy_1, enemy_2)
+    elif level == 5:
+        game = Game(labirinth_2, hero, enemy_1, enemy_2)
+    elif level == 6:
+        game = Game(labirinth_3, hero, enemy_1, enemy_2)
+    elif level == 7:
+        game = Game(labirinth_1, hero, enemy_1, enemy_2, enemy_3)
+    elif level == 8:
+        game = Game(labirinth_2, hero, enemy_1, enemy_2, enemy_3)
+    elif level == 9:
+        game = Game(labirinth_3, hero, enemy_1, enemy_2, enemy_3)
     clock = pygame.time.Clock()
     running = True
     game_over = False
@@ -164,8 +189,13 @@ def main():
         screen.fill((0, 0, 0))
         game.render(screen)
         if game.check_win():
-            game_over = True
-            show_message(screen, "Yuo won!")
+            if level < 9:
+                level += 1
+                main(level)
+                break
+            else:
+                game_over = True
+                show_message(screen, "Yuo won!")
         if game.check_lose():
             game_over = True
             show_message(screen, "Yuo lost!")
