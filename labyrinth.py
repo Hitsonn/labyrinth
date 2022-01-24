@@ -10,6 +10,17 @@ MAPS_DIR = "maps"
 TILE_SIZE = 32
 ENEMY_EVENT_TYPE = 30
 NUMBER_OF_LEVELS = 9
+INTRO_TEXT = ["PACMAN 2022", "", "", "", "",
+                  "", "", "", "", "",
+                  "для продолжения",
+                  "нажми любую клавишу...",
+                  ]
+FINAL_TEXT = ["PACMAN 2022", "", "", "", "",
+                  "", "", "", "",
+                  "спасибо за игру",
+                  "для выхода",
+                  "нажми любую клавишу...",
+                  ]
 
 
 class Labyrinth:
@@ -136,6 +147,31 @@ class Game:
         return self.result
 
 
+def start_screen(screen, text):
+    clock = pygame.time.Clock()
+    fon = pygame.transform.scale(pygame.image.load(f"images/background.jpg"), (WINDOWS_SIZE))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font('fonts/PeaceSans.otf', 30)
+    text_coord = 10
+    for line in text:
+        string_rendered = font.render(line, 1, pygame.Color('#00416a'), pygame.Color('#71bc78'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN or \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                return
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 def show_message(screen, message):
     font = pygame.font.Font(None, 50)
     text = font.render(message, 1, (50, 70, 0))
@@ -179,6 +215,8 @@ def generate_lavel(level):
 
 
 def terminate():
+    screen = pygame.display.set_mode(WINDOWS_SIZE)
+    start_screen(screen, FINAL_TEXT)
     pygame.quit()
     sys.exit()
 
@@ -188,6 +226,8 @@ def main():
     screen = pygame.display.set_mode(WINDOWS_SIZE)
 
     clock = pygame.time.Clock()
+    start_screen(screen, INTRO_TEXT)
+
     game_over = False
     for i in range(NUMBER_OF_LEVELS):
         level = i
