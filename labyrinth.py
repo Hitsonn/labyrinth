@@ -1,12 +1,15 @@
+import sys
+
 import pygame
 import pytmx
 
 
 WINDOWS_SIZE = WINDOW_WIDTH, WINDOW_HEIGHT = 672, 648
-FPS = 15
+FPS = 10
 MAPS_DIR = "maps"
 TILE_SIZE = 32
 ENEMY_EVENT_TYPE = 30
+NUMBER_OF_LEVELS = 9
 
 
 class Labyrinth:
@@ -106,13 +109,13 @@ class Game:
 
     def update_hero(self):
         next_x, next_y = self.hero.get_position()
-        if pygame.key.get_pressed()[pygame.K_LEFT]:
+        if pygame.key.get_pressed()[pygame.K_a]:
             next_x -= 1
-        if pygame.key.get_pressed()[pygame.K_RIGHT]:
+        if pygame.key.get_pressed()[pygame.K_d]:
             next_x += 1
-        if pygame.key.get_pressed()[pygame.K_UP]:
+        if pygame.key.get_pressed()[pygame.K_w]:
             next_y -= 1
-        if pygame.key.get_pressed()[pygame.K_DOWN]:
+        if pygame.key.get_pressed()[pygame.K_s]:
             next_y += 1
         if self.labyrinth.is_free((next_x, next_y)):
             self.hero.set_position((next_x, next_y))
@@ -145,11 +148,8 @@ def show_message(screen, message):
     screen.blit(text, (text_x, text_y))
 
 
-def main(level=1):
-    pygame.init()
-    screen = pygame.display.set_mode(WINDOWS_SIZE)
+def generate_lavel(level):
     level = level
-
     labirinth_1 = Labyrinth("map1.tmx", [10, 46], 46)
     labirinth_2 = Labyrinth("map2.tmx", [15, 46], 46)
     labirinth_3 = Labyrinth("map3.tmx", [30, 46], 46)
@@ -157,50 +157,64 @@ def main(level=1):
     enemy_1 = Enemy("enemy.png", (19, 9), 300)
     enemy_2 = Enemy("enemy.png", (1, 7), 300)
     enemy_3 = Enemy("enemy.png", (4, 7), 300)
-    if level == 1:
+    if level == 0:
         game = Game(labirinth_1, hero, enemy_1)
-    elif level == 2:
+    elif level == 1:
         game = Game(labirinth_2, hero, enemy_1)
-    elif level == 3:
+    elif level == 2:
         game = Game(labirinth_3, hero, enemy_1)
-    elif level == 4:
+    elif level == 3:
         game = Game(labirinth_1, hero, enemy_1, enemy_2)
-    elif level == 5:
+    elif level == 4:
         game = Game(labirinth_2, hero, enemy_1, enemy_2)
-    elif level == 6:
+    elif level == 5:
         game = Game(labirinth_3, hero, enemy_1, enemy_2)
-    elif level == 7:
+    elif level == 6:
         game = Game(labirinth_1, hero, enemy_1, enemy_2, enemy_3)
-    elif level == 8:
+    elif level == 7:
         game = Game(labirinth_2, hero, enemy_1, enemy_2, enemy_3)
-    elif level == 9:
+    elif level == 8:
         game = Game(labirinth_3, hero, enemy_1, enemy_2, enemy_3)
+    return game
+
+
+def terminate():
+    pygame.quit()
+    sys.exit()
+
+
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode(WINDOWS_SIZE)
+
     clock = pygame.time.Clock()
-    running = True
     game_over = False
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == ENEMY_EVENT_TYPE and not game_over:
-                game.move_enemy()
-        if not game_over:
-            game.update_hero()
-        screen.fill((0, 0, 0))
-        game.render(screen)
-        if game.check_win():
-            if level < 9:
-                level += 1
-                main(level)
-                break
-            else:
+    for i in range(NUMBER_OF_LEVELS):
+        level = i
+        game = generate_lavel(level)
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+                if event.type == ENEMY_EVENT_TYPE and not game_over:
+                    game.move_enemy()
+            if not game_over:
+                game.update_hero()
+            screen.fill((0, 0, 0))
+            game.render(screen)
+            if game.check_win():
+                if level < 9:
+                    level += 1
+                    generate_lavel(level)
+                    break
+                else:
+                    game_over = True
+                    show_message(screen, "You win!")
+            if game.check_lose():
                 game_over = True
-                show_message(screen, "Yuo won!")
-        if game.check_lose():
-            game_over = True
-            show_message(screen, "Yuo lost!")
-        pygame.display.flip()
-        clock.tick(FPS)
+                show_message(screen, "You loos!")
+            pygame.display.flip()
+            clock.tick(FPS)
     pygame.quit()
 
 
