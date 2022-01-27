@@ -2,7 +2,7 @@ import sys
 
 import pygame
 import pytmx
-
+pygame.init()
 
 WINDOWS_SIZE = WINDOW_WIDTH, WINDOW_HEIGHT = 672, 648
 FPS = 10
@@ -21,6 +21,7 @@ FINAL_TEXT = ["PACMAN 2022", "", "", "", "",
                   "для выхода",
                   "нажми любую клавишу...",
                   ]
+IS_PAUSED = False
 
 
 class Labyrinth:
@@ -98,7 +99,8 @@ class Enemy:
         return self.x, self.y
 
     def set_position(self, position):
-        self.x, self.y = position
+        if not IS_PAUSED:
+            self.x, self.y = position
 
     def render(self, screen):
         delta = (self.image.get_width() - TILE_SIZE) // 2
@@ -120,13 +122,13 @@ class Game:
 
     def update_hero(self):
         next_x, next_y = self.hero.get_position()
-        if pygame.key.get_pressed()[pygame.K_a]:
+        if pygame.key.get_pressed()[pygame.K_LEFT]:
             next_x -= 1
-        if pygame.key.get_pressed()[pygame.K_d]:
+        if pygame.key.get_pressed()[pygame.K_RIGHT]:
             next_x += 1
-        if pygame.key.get_pressed()[pygame.K_w]:
+        if pygame.key.get_pressed()[pygame.K_UP]:
             next_y -= 1
-        if pygame.key.get_pressed()[pygame.K_s]:
+        if pygame.key.get_pressed()[pygame.K_DOWN]:
             next_y += 1
         if self.labyrinth.is_free((next_x, next_y)):
             self.hero.set_position((next_x, next_y))
@@ -138,13 +140,21 @@ class Game:
             enemy.set_position(next_position)
 
     def check_win(self):
+        pygame.mixer.music.stop()
         return self.labyrinth.get_tile_id(self.hero.get_position()) == self.labyrinth.finish_tile
 
     def check_lose(self):
         for enemy in self.enemy:
             if self.hero.get_position() == enemy.get_position():
                 self.result = True
+                pygame.mixer.music.stop()
         return self.result
+
+
+def play_audio(track):
+    pygame.mixer.music.load(f'audio\{track}')
+    pygame.mixer.music.play(1)
+    pygame.mixer.music.set_volume(0.3)
 
 
 def start_screen(screen, text):
@@ -193,6 +203,7 @@ def generate_lavel(level):
     enemy_1 = Enemy("enemy.png", (19, 9), 300)
     enemy_2 = Enemy("enemy.png", (1, 7), 300)
     enemy_3 = Enemy("enemy.png", (4, 7), 300)
+    game = Game(labirinth_1, hero, enemy_1)
     if level == 0:
         game = Game(labirinth_1, hero, enemy_1)
     elif level == 1:
@@ -215,6 +226,7 @@ def generate_lavel(level):
 
 
 def terminate():
+    play_audio('stop.mp3')
     screen = pygame.display.set_mode(WINDOWS_SIZE)
     start_screen(screen, FINAL_TEXT)
     pygame.quit()
@@ -222,14 +234,16 @@ def terminate():
 
 
 def main():
+    global IS_PAUSED
     pygame.init()
     screen = pygame.display.set_mode(WINDOWS_SIZE)
-
     clock = pygame.time.Clock()
+    play_audio('start.mp3')
     start_screen(screen, INTRO_TEXT)
 
     game_over = False
     for i in range(NUMBER_OF_LEVELS):
+        play_audio('level.mp3')
         level = i
         game = generate_lavel(level)
         while True:
@@ -238,25 +252,30 @@ def main():
                     terminate()
                 if event.type == ENEMY_EVENT_TYPE and not game_over:
                     game.move_enemy()
-            if not game_over:
-                game.update_hero()
-            screen.fill((0, 0, 0))
-            game.render(screen)
-            if game.check_win():
-                if level < 9:
-                    level += 1
-                    generate_lavel(level)
-                    break
-                else:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:
+                        IS_PAUSED = not IS_PAUSED
+            if not IS_PAUSED:
+                if not game_over:
+                    game.update_hero()
+                screen.fill((0, 0, 0))
+                game.render(screen)
+                if game.check_win():
+                    if level < 8:
+                        level += 1
+                        generate_lavel(level)
+                        break
+                    else:
+                        game_over = True
+                        show_message(screen, "You win!")
+                if game.check_lose():
                     game_over = True
-                    show_message(screen, "You win!")
-            if game.check_lose():
-                game_over = True
-                show_message(screen, "You loos!")
-            pygame.display.flip()
-            clock.tick(FPS)
+                    show_message(screen, "You lose!")
+                pygame.display.flip()
+                clock.tick(FPS)
     pygame.quit()
 
 
 if __name__ == '__main__':
     main()
+
