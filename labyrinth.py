@@ -4,7 +4,8 @@ from audio import *
 
 from constants import *
 
-from personage import Hero, Enemy, Bonus, Labyrinth, Game
+from levels import GenerateLevel
+
 
 pygame.init()
 
@@ -72,43 +73,7 @@ def show_message(screen, message):
     screen.blit(text, (text_x, text_y))
 
 
-def generate_level(level):
-    global all_bonus
-    level = level
-    speed_enemy = 300
-    labirinth_1 = Labyrinth("map1.tmx", [10, 46], 46)
-    labirinth_2 = Labyrinth("map2.tmx", [15, 46], 46)
-    labirinth_3 = Labyrinth("map3.tmx", [30, 46], 46)
-    hero = Hero("hero.png", (10, 9))
-    enemy_1 = Enemy("enemy.png", (19, 9), speed_enemy)
-    enemy_2 = Enemy("enemy.png", (1, 7), speed_enemy)
-    enemy_3 = Enemy("enemy.png", (4, 7), speed_enemy)
-    bonus_1 = Bonus((17, 5))
-    bonus_2 = Bonus((19, 17))
-    bonus_3 = Bonus((1, 1))
-    bonus_4 = Bonus((9, 9))
-    bonus_5 = Bonus((9, 9))
-    bonus_6 = Bonus((9, 9))
-    all_bonus = [bonus_1, bonus_2, bonus_3, bonus_4, bonus_5, bonus_6]
-    if level == 1:
-        game = Game(labirinth_1, hero, [enemy_1], [bonus_1])
-    elif level == 2:
-        game = Game(labirinth_2, hero, [enemy_1], [bonus_2])
-    elif level == 3:
-        game = Game(labirinth_3, hero, [enemy_1], [bonus_3])
-    elif level == 4:
-        game = Game(labirinth_1, hero, [enemy_1, enemy_2], [bonus_1, bonus_2])
-    elif level == 5:
-        game = Game(labirinth_2, hero, [enemy_1, enemy_2], [bonus_1])
-    elif level == 6:
-        game = Game(labirinth_3, hero, [enemy_1, enemy_2], [bonus_1])
-    elif level == 7:
-        game = Game(labirinth_1, hero, [enemy_1, enemy_2, enemy_3], [bonus_1])
-    elif level == 8:
-        game = Game(labirinth_2, hero, [enemy_1, enemy_2, enemy_3], [bonus_1])
-    elif level == 9:
-        game = Game(labirinth_3, hero, [enemy_1, enemy_2, enemy_3], [bonus_1])
-    return game
+
 
 
 def terminate():
@@ -133,8 +98,9 @@ def main():
         show_score(screen, f" Bonus = {score}")
         pygame.display.flip()
         clock.tick(1)
-        level = i
-        game = generate_level(level)
+        levels = i
+        level = GenerateLevel()
+        game = level.level_selection(levels)
         start_sound.stop()
         level_sound.play()
         while True:
@@ -153,12 +119,12 @@ def main():
                 screen.fill((0, 0, 0))
                 game.render(screen)
                 if game.check_win():
-                    if level < 9:
-                        level += 1
-                        generate_level(level)
+                    if levels < 9:
+                        levels += 1
+                        game = level.level_selection(levels)
                         level_sound.stop()
                         won_sound.play()
-                        show_message(screen, f"level {level}")
+                        show_message(screen, f"level {levels}")
                         pygame.display.flip()
                         clock.tick(1)
                         break
@@ -177,8 +143,7 @@ def main():
                     show_message(screen, "You lose!")
                 pygame.display.flip()
                 clock.tick(FPS)
-        for bonus in all_bonus:
-            score += bonus.score
+            score = level.score()
         level_sound.stop()
 
     pygame.quit()
