@@ -73,9 +73,6 @@ def show_message(screen, message):
     screen.blit(text, (text_x, text_y))
 
 
-
-
-
 def terminate():
     level_sound.stop()
     stop_sound.play()
@@ -135,7 +132,7 @@ def main():
                         show_message(screen, "You win!")
                         pygame.display.flip()
                         clock.tick(1)
-                        start_screen(screen, INTRO_TEXT, None)
+                        start_screen(screen, INTRO_TEXT, score)
                         break
                 if game.check_lose():
                     level_sound.stop()
@@ -143,7 +140,7 @@ def main():
                     show_message(screen, "You lose!")
                 pygame.display.flip()
                 clock.tick(FPS)
-            score = level.score()
+        score += level.score()
         level_sound.stop()
 
     pygame.quit()

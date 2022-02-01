@@ -69,14 +69,18 @@ class Game:
 
     def update_hero(self):
         next_x, next_y = self.hero.get_position()
-        if pygame.key.get_pressed()[pygame.K_LEFT]:
+        if pygame.key.get_pressed()[pygame.K_LEFT] or pygame.key.get_pressed()[pygame.K_a]:
             next_x -= 1
-        if pygame.key.get_pressed()[pygame.K_RIGHT]:
+            self.hero.update_image_left()
+        if pygame.key.get_pressed()[pygame.K_RIGHT] or pygame.key.get_pressed()[pygame.K_d]:
             next_x += 1
-        if pygame.key.get_pressed()[pygame.K_UP]:
+            self.hero.update_image_right()
+        if pygame.key.get_pressed()[pygame.K_UP] or pygame.key.get_pressed()[pygame.K_w]:
             next_y -= 1
-        if pygame.key.get_pressed()[pygame.K_DOWN]:
+            self.hero.update_image_up()
+        if pygame.key.get_pressed()[pygame.K_DOWN] or pygame.key.get_pressed()[pygame.K_s]:
             next_y += 1
+            self.hero.update_image_down()
         if self.labyrinth.is_free((next_x, next_y)):
             self.hero.set_position((next_x, next_y))
 
@@ -116,6 +120,7 @@ class Game:
 class Hero:
 
     def __init__(self, pic, position):
+        self.pic = pic
         self.x, self.y = position
         self.image = pygame.image.load(f"images/{pic}")
 
@@ -128,6 +133,18 @@ class Hero:
     def render(self, screen):
         delta = (self.image.get_width() - TILE_SIZE) // 2
         screen.blit(self.image, (self.x * TILE_SIZE - delta, self.y * TILE_SIZE - delta))
+
+    def update_image_left(self):
+        self.image = pygame.image.load(f"images/l_hero.png")
+
+    def update_image_right(self):
+        self.image = pygame.image.load(f"images/{self.pic}")
+
+    def update_image_up(self):
+        self.image = pygame.image.load(f"images/u_hero.png")
+
+    def update_image_down(self):
+        self.image = pygame.image.load(f"images/d_hero.png")
 
 
 class Enemy:
