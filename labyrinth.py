@@ -24,7 +24,7 @@ def start_screen(screen, text, message):
     clock = pygame.time.Clock()
     fon = pygame.transform.scale(pygame.image.load(f"images/background.jpg"), WINDOWS_SIZE)
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font('fonts/PeaceSans.otf', 30)
+    font = pygame.font.Font('fonts/PeaceSans.otf', 27)
     text_coord = 10
     message = message
     for line in text:
@@ -38,7 +38,8 @@ def start_screen(screen, text, message):
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                terminate()
+                pygame.quit()
+                sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if message:
                     show_message(screen, f"level {message}")
@@ -118,7 +119,7 @@ def main():
                 if game.check_win():
                     if levels < 9:
                         levels += 1
-                        game = level.level_selection(levels)
+                        #game = level.level_selection(levels)
                         level_sound.stop()
                         won_sound.play()
                         show_message(screen, f"level {levels}")
