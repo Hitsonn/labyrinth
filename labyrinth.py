@@ -1,9 +1,9 @@
 import sys
+import getpass
 
+from datetime import datetime, date
 from audio import *
-
 from constants import *
-
 from levels import GenerateLevel
 
 
@@ -83,10 +83,24 @@ def terminate():
     sys.exit()
 
 
+def print_file(score):
+    user = getpass.getuser()
+    now = datetime.now()
+    day = date.today()
+    time = now.strftime("%H:%M:%S")
+    f = open('results.txt', 'w')
+    try:
+        f.write(f"{user}! Ваш результат - {score} баллов. {day}  {time}")
+    finally:
+        f.close()
+
+
 def main():
     score = 0
     pygame.init()
     screen = pygame.display.set_mode(WINDOWS_SIZE)
+    ico = pygame.image.load(f"images/icon.ico")
+    pygame.display.set_icon(ico)
     clock = pygame.time.Clock()
     start_sound.play()
     start_screen(screen, INTRO_TEXT, '1')
@@ -131,6 +145,7 @@ def main():
                         start_sound.play()
                         game_over = True
                         show_message(screen, "You win!")
+                        print_file(score)
                         pygame.display.flip()
                         clock.tick(1)
                         start_screen(screen, INTRO_TEXT, score)
@@ -138,7 +153,8 @@ def main():
                 if game.check_lose():
                     level_sound.stop()
                     game_over = True
-                    show_message(screen, "You lose!")
+                    show_message(screen, "Game over")
+                    print_file(score)
                 pygame.display.flip()
                 clock.tick(FPS)
         score += level.score()
